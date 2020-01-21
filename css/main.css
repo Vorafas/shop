@@ -1,0 +1,81 @@
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+}
+
+.header {
+    width: 100%;
+    height: 62px;
+    background: rgba(26,26,26,0.92);
+    box-shadow: 0 1px 3px 1px rgba(0,0,0,0.3);
+    color: #fff;
+}
+
+.header-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    line-height: 62px;
+}
+
+.cart-button {
+    color: #fff;
+    background: #7bbb5e;
+    border: none;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: 500;
+    float: right;
+    padding: 10px 20px;
+    margin-top: 10px;
+}
+
+.main {
+    position: relative;
+}
+
+.goods-list {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 50px;
+}
+
+.goods-item {
+    padding: 20px;
+    width: 190px;
+    background: hsla(0,0%,98%,.6);
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,.15);
+    margin: 0 30px 30px 0;
+    border: 5px;
+}
+
+.goods-item .title {
+    line-height: 24px;
+    color: #282B30;
+    margin: 10px 0;
+    height: 48px;
+}
+
+.goods-item .price:after {
+    content: ' ₽';
+}
+
+.goods-item .price {
+    color: #404040;
+    font-weight: 700;
+    text-align: right;
+    margin-top: 20px;
+}
+
+.goods-item .image {
+    width: 150px;
+    height: 150px;
+}
