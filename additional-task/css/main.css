@@ -1,0 +1,22 @@
+body {
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f6f6f6;
+}
+
+.main {
+    position: relative;
+}
+
+.main .main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.main .main-container .form-container {
+    max-width: 800px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,.15);
+    margin: 100px auto 0 auto;
+}
