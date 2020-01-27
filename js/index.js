@@ -15,7 +15,7 @@ function makeGetRequest(url) {
                 const response = JSON.parse(xhr.responseText);
                 resolve(response);
             } else {
-                reject(`XMLHttpRequest status: ${xhttp.status}`);
+                reject(`XMLHttpRequest status: ${xhr.status}`);
             }
         }
 
