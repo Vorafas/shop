@@ -13,29 +13,20 @@
     <div id="app">
         <header class="header">
             <div class="header-container">
-                <form class="goods-search" @submit="searchGoods">
-                    <input type="text" class="goods-search-value">
-                    <button type="submit" class="goods-search-button">Искать</button>
-                </form>
-                <button class="cart-button"  v-on:click="clickCard">Корзина</button>
-                <div v-if="isVisibleCart" class="cart-container">
-                    <ul class="cart-goods"></ul>
+                <div class="item">
+                    <cart-button />
+                </div>
+                <div class="item">
+                    <goods-search :goods="goods" />
                 </div>
             </div>        
         </header>
         <main class="main">
             <div class="main-container">
-                <div class="goods-list" v-if="hasFilteredGoods">
-                    <div class="goods-item" v-for="good in filteredGoods" :key="good.id_product">
-                        <img class="image" src="https://via.placeholder.com/250" alt="alt">
-                        <h3>{{ good.product_name }}</h3>
-                        <p>{{ good.price }}</p>
-                        <button>Добавить</button>
-                    </div>
-                </div>
-                <div class="goods-list" v-else>«Нет данных»</div>
+                <goods-list :goods="goods" />
             </div>
         </main>
+        <error />
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
