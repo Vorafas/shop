@@ -17,16 +17,16 @@
                     <cart-button />
                 </div>
                 <div class="item">
-                    <goods-search :goods="goods" />
+                    <goods-search :goods="goods" :filtered-goods.sync="filteredGoods" />
                 </div>
             </div>        
         </header>
         <main class="main">
             <div class="main-container">
-                <goods-list :goods="goods" />
+                <goods-list :goods="filteredGoods" />
             </div>
         </main>
-        <error />
+        <notification ref="notification" />
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>

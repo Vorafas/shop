@@ -35,36 +35,28 @@ Vue.component('cart-button', {
     `
 });
 
-Vue.component('error', {
+Vue.component('notification', {
     data() {
         return {
-            description: '',
-            timerId: null
+            error: null,
+            wait: 5000
         }
     },
     methods: {
-        clearDescription() {}
-    },
-    computed: {
-        isShowError() {
-            return (typeof this.description === 'string' && this.description.length > 5);
+        notify(error) {
+            this.error = error;
+            setTimeout(() => {
+                this.clean();
+            }, this.wait);
+        },
+        clean() {
+            this.error = null;
         }
     },
-    mounted() {
-        this.$parent.$on('error', (description) => {
-            clearTimeout(this.timerId);
-
-            this.description = description;
-            
-            this.timerId = setTimeout(() => {
-                this.description = '';
-            }, 10000);
-        });
-    },
     template: `
-        <div class="error" v-if="isShowError">
+        <div class="error" v-if="error">
             <div class="error-title">Ошибка</div>
-            <div class="error-msg">{{ description }}</div>
+            <div class="error-msg">{{ error.message }}</div>
         </div>
     `
 })
@@ -88,11 +80,10 @@ Vue.component('goods-list', {
 });
 
 Vue.component('goods-search', {
-    props: ['goods'],
+    props: ['goods', 'filteredGoods'],
     data() {
         return {
             searchLine: '',
-            filteredGoods: [],
         }
     },
     methods: {
@@ -102,9 +93,10 @@ Vue.component('goods-search', {
         },
         filterGoods(value) {
             const regexp = new RegExp(value, 'i');
-            this.filteredGoods = this.goods.filter((good) => {
+            const filteredGoods = this.goods.filter((good) => {
                 return regexp.test(good.product_name);
             });
+            this.$emit('update:filteredGoods', filteredGoods);
         },
     },
     template: `
@@ -151,15 +143,17 @@ const app = new Vue({
         },
         async fetchGoods() {
             try {
-                this.goods = await this.makeGetRequest(`${API_URL}/catalogData.json`)
+                this.goods = await this.makeGetRequest(`${API_URL}/c/atalogData.json`)
                 this.filteredGoods = [...this.goods];
             } catch (e) {
-                this.$emit('error', e);
+                this.$refs.notification.notify(new Error(e));
                 console.error(e);
             }
         }
     },
     mounted() {
-        this.fetchGoods();
+        this.$nextTick(() => {
+            this.fetchGoods();
+        });
     }
 });
