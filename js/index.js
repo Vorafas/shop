@@ -143,7 +143,7 @@ const app = new Vue({
         },
         async fetchGoods() {
             try {
-                this.goods = await this.makeGetRequest(`${API_URL}/c/atalogData.json`)
+                this.goods = await this.makeGetRequest(`${API_URL}/catalogData.json`)
                 this.filteredGoods = [...this.goods];
             } catch (e) {
                 this.$refs.notification.notify(new Error(e));
