@@ -14,9 +14,14 @@ body {
 }
 
 .header-container {
-    max-width: 1280px;
+    max-width: 1200px;
     margin: 0 auto;
     line-height: 62px;
+    height: 62px;
+}
+
+.header-container > .item{
+    position: relative;
 }
 
 .cart-button {
@@ -28,7 +33,7 @@ body {
     font-weight: 500;
     position: absolute;
     top: 0;
-    right: 10px;
+    right: 0px;
     padding: 10px 20px;
     margin-top: 10px;
     cursor: pointer;
@@ -96,5 +101,42 @@ body {
 form.goods-search {
     position: absolute;
     top: 0;
-    left: 10px;
+    left: 0px;
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: all .3s linear;
+}
+
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+    top: 81px;
+}
+
+.goods-not-found {
+    text-align: center;
+}
+
+.error {
+    position: fixed;
+    min-width: 400px;
+    min-height: 150px;
+    background: #dededeee;
+    border-radius: 5px;
+    right: 3%;
+    bottom: 5%;
+    box-sizing: border-box;
+}
+
+.error .error-title {
+    width: 100%;
+    height: 20px;
+    font-size: 20px;
+    padding: 20px;
+    color: #E91E63;
+}
+
+.error .error-msg {
+    padding: 0 20px;
+    line-height: 20px;
 }
