@@ -9,7 +9,6 @@ body {
     height: 62px;
     background: rgba(26,26,26,0.92);
     box-shadow: 0 1px 3px 1px rgba(0,0,0,0.3);
-    color: #fff;
     margin-bottom: 40px;
 }
 
@@ -92,10 +91,12 @@ body {
     right: 10px;
     top: 61px;
     min-width: 400px;
-    min-height: 200px;
+    height: 200px;
+    overflow-x: auto;
     background-color: #fff;
     box-shadow: 0 1px 4px 0 rgba(0,0,0,.15);
     border-radius: 5px;
+    z-index: 5;
 }
 
 form.goods-search {
@@ -139,4 +140,31 @@ form.goods-search {
 .error .error-msg {
     padding: 0 20px;
     line-height: 20px;
+}
+
+.cart .card-empty {
+    color: #000;
+    text-align: center;
+}
+
+.cart .cart-goods {
+    margin: 0;
+    padding: 0;
+}
+
+.cart .cart-goods li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0 20px;
+    position: relative;
+}
+
+.cart .cart-goods li div {
+    display: inline-block;
+}
+
+.cart .cart-goods li .remove-good {
+    position: absolute;
+    right: 20px;
+    top: 19px;
 }

@@ -1,8 +1,42 @@
+function request(method, url, params, useCustomRequestHeader) {
+    return new Promise((resolve, reject) => {
+        let xhr;
+        if (window.XMLHttpRequest) {
+            xhr = new window.XMLHttpRequest();
+        } else {
+            xhr = new window.ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== 4) return;
+
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+            } else {
+                reject(`XMLHttpRequest status: ${xhr.status}`);
+            }
+        }
+
+        xhr.open(method, url);
+        if (useCustomRequestHeader) {
+            for (const key in useCustomRequestHeader) {
+                xhr.setRequestHeader(key, useCustomRequestHeader[key]);
+            }
+        } else if (method === 'POST') {
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        }
+        xhr.send(params || null);
+    });
+}
+
 Vue.component('goods-item', {
     props: ['good'],
     methods: {
         addCard() {
-            console.log(this.good);
+            request('POST', '/api/cart', JSON.stringify(this.good), {
+                'Content-type': 'application/json; charset=utf-8'
+            });
         }
     },
     template: `
@@ -15,15 +49,38 @@ Vue.component('goods-item', {
     `
 });
 
-Vue.component('cart-button', {
+Vue.component('cart', {
     data() {
         return {
             isVisibleCart: false,
+            goods: [],
         }
     },
     methods: {
         toggleCartVisibility() {
             this.isVisibleCart = !this.isVisibleCart;
+            if (this.isVisibleCart) {
+                this.fetchGoods();
+            }
+        },
+        fetchGoods() {
+            return request('GET', '/api/cart').then((response) => {
+                if (response) {
+                    this.goods = response;
+                }
+            });
+        },
+        removeGoods(id) {
+            return request('POST', '/api/cart/' + id).then((response) => {
+                if (response && response.result === 1) {
+                    this.fetchGoods();
+                }
+            });
+        }
+    },
+    computed: {
+        isCartEmpty() {
+            return this.goods.length === 0;
         }
     },
     template: `
@@ -31,7 +88,16 @@ Vue.component('cart-button', {
             <button class="cart-button"  @click="toggleCartVisibility">Корзина</button>
             <transition name="fade">
                 <div class="cart-container" v-if="isVisibleCart">
-                    <ul class="cart-goods"></ul>
+                    <ul class="cart-goods" v-if="!isCartEmpty">
+                        <li v-for="good in goods" :key="good.id">
+                            <div class="title">{{ good.name }}</div>
+                            <div class="price">{{ good.price }} ₽</div>
+                            <button class="remove-good" @click="removeGoods(good.id)">Удалить из корзины</button>
+                        </li>
+                    </ul>                  
+                    <div class="card-empty" v-else>
+                        <h3>Корзина пуста</h3>
+                    </div>
                 </div>
             </transition>
         </div>
@@ -146,7 +212,7 @@ const app = new Vue({
         },
         async fetchGoods() {
             try {
-                this.goods = await this.makeGetRequest(`/api/goods`)
+                this.goods = await request('GET', '/api/goods');
                 this.filteredGoods = [...this.goods];
             } catch (e) {
                 this.$refs.notification.notify(new Error(e));
