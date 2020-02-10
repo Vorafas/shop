@@ -1,13 +1,16 @@
-const API_URL = "https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses";
-
 Vue.component('goods-item', {
     props: ['good'],
+    methods: {
+        addCard() {
+            console.log(this.good);
+        }
+    },
     template: `
         <div class="goods-item">
             <img class="image" src="https://via.placeholder.com/250" alt="alt">
-            <h3>{{ good.product_name }}</h3>
+            <h3>{{ good.name }}</h3>
             <p>{{ good.price }}</p>
-            <button>Добавить</button>
+            <button @click="addCard">Добавить</button>
         </div>
     `
 });
@@ -71,7 +74,7 @@ Vue.component('goods-list', {
     template: `
         <div class="goods-list" v-if="!isFilteredGoodsEmpty">
             <goods-item v-for="good in goods" 
-                        :key="good.id_product" :good="good"></goods-item>
+                        :key="good.id" :good="good"></goods-item>
         </div>
         <div class="goods-not-found" v-else>
             <h3>Нет данных</h3>
@@ -94,7 +97,7 @@ Vue.component('goods-search', {
         filterGoods(value) {
             const regexp = new RegExp(value, 'i');
             const filteredGoods = this.goods.filter((good) => {
-                return regexp.test(good.product_name);
+                return regexp.test(good.name);
             });
             this.$emit('update:filteredGoods', filteredGoods);
         },
@@ -143,7 +146,7 @@ const app = new Vue({
         },
         async fetchGoods() {
             try {
-                this.goods = await this.makeGetRequest(`${API_URL}/catalogData.json`)
+                this.goods = await this.makeGetRequest(`/api/goods`)
                 this.filteredGoods = [...this.goods];
             } catch (e) {
                 this.$refs.notification.notify(new Error(e));
