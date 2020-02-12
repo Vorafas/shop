@@ -1,42 +1,8 @@
-function request(method, url, params, useCustomRequestHeader) {
-    return new Promise((resolve, reject) => {
-        let xhr;
-        if (window.XMLHttpRequest) {
-            xhr = new window.XMLHttpRequest();
-        } else {
-            xhr = new window.ActiveXObject("Microsoft.XMLHTTP");
-        }
-
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState !== 4) return;
-
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                resolve(response);
-            } else {
-                reject(`XMLHttpRequest status: ${xhr.status}`);
-            }
-        }
-
-        xhr.open(method, url);
-        if (useCustomRequestHeader) {
-            for (const key in useCustomRequestHeader) {
-                xhr.setRequestHeader(key, useCustomRequestHeader[key]);
-            }
-        } else if (method === 'POST') {
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        }
-        xhr.send(params || null);
-    });
-}
-
 Vue.component('goods-item', {
     props: ['good'],
     methods: {
-        addCard() {
-            request('POST', '/api/cart', JSON.stringify(this.good), {
-                'Content-type': 'application/json; charset=utf-8'
-            });
+        addToCart() {
+            return this.$emit('add', this.good)
         }
     },
     template: `
@@ -44,43 +10,45 @@ Vue.component('goods-item', {
             <img class="image" src="https://via.placeholder.com/250" alt="alt">
             <h3>{{ good.name }}</h3>
             <p>{{ good.price }}</p>
-            <button @click="addCard">Добавить</button>
+            <button @click="addToCart">Добавить</button>
         </div>
     `
 });
 
+Vue.component('cart-item', {
+    props: ['good'],
+    methods: {
+        removeToCart() {
+            return this.$emit('remove', this.good);
+        }
+    },
+    template: `
+        <li>
+            <div class="title">{{ good.name }}</div>
+            <div class="price">{{ good.price }} ₽</div>
+            <button class="remove-good" @click="removeToCart">Удалить из корзины</button>
+        </li>
+    `
+})
+
 Vue.component('cart', {
+    props: ['cart'],
     data() {
         return {
             isVisibleCart: false,
-            goods: [],
         }
     },
     methods: {
         toggleCartVisibility() {
             this.isVisibleCart = !this.isVisibleCart;
-            if (this.isVisibleCart) {
-                this.fetchGoods();
-            }
         },
-        fetchGoods() {
-            return request('GET', '/api/cart').then((response) => {
-                if (response) {
-                    this.goods = response;
-                }
-            });
-        },
-        removeGoods(id) {
-            return request('POST', '/api/cart/' + id).then((response) => {
-                if (response && response.result === 1) {
-                    this.fetchGoods();
-                }
-            });
+        removeToCart(good) {
+            this.$emit('remove', good.id);
         }
     },
     computed: {
         isCartEmpty() {
-            return this.goods.length === 0;
+            return this.cart.length === 0;
         }
     },
     template: `
@@ -89,11 +57,7 @@ Vue.component('cart', {
             <transition name="fade">
                 <div class="cart-container" v-if="isVisibleCart">
                     <ul class="cart-goods" v-if="!isCartEmpty">
-                        <li v-for="good in goods" :key="good.id">
-                            <div class="title">{{ good.name }}</div>
-                            <div class="price">{{ good.price }} ₽</div>
-                            <button class="remove-good" @click="removeGoods(good.id)">Удалить из корзины</button>
-                        </li>
+                        <cart-item v-for="good in cart" :key="good.id" :good="good" @remove="removeToCart" />
                     </ul>                  
                     <div class="card-empty" v-else>
                         <h3>Корзина пуста</h3>
@@ -137,9 +101,14 @@ Vue.component('goods-list', {
             return this.goods.length === 0;
         }
     },
+    methods: {
+        addToCart(good) {
+             this.$emit('add', good);
+        }
+    },
     template: `
         <div class="goods-list" v-if="!isFilteredGoodsEmpty">
-            <goods-item v-for="good in goods" 
+            <goods-item v-for="good in goods" @add="addToCart"
                         :key="good.id" :good="good"></goods-item>
         </div>
         <div class="goods-not-found" v-else>
@@ -180,10 +149,11 @@ const app = new Vue({
     data: {
         goods: [],
         filteredGoods: [],
+        cart: [],
         isVisibleCart: false,
     },
     methods: {
-        makeGetRequest(url) {
+        request(method, url, data, heads) {
             return new Promise((resolve, reject) => {
                 let xhr;
                 if (window.XMLHttpRequest) {
@@ -192,7 +162,7 @@ const app = new Vue({
                     xhr = new window.ActiveXObject("Microsoft.XMLHTTP");
                 }
 
-                xhr.onreadystatechange = function() {
+                xhr.onreadystatechange = function () {
                     if (xhr.readyState !== 4) return;
 
                     if (xhr.status === 200) {
@@ -203,16 +173,47 @@ const app = new Vue({
                     }
                 }
 
-                xhr.open("GET", url);
-                xhr.send();
+                xhr.open(method, url);
+                for (const key in heads) {
+                    xhr.setRequestHeader(key, heads[key]);
+                }
+                xhr.send(data || null);
             });
         },
         toggleCartVisibility() {
             this.isVisibleCart = !this.isVisibleCart;
         },
+        async removeToCart(id) {
+            try {
+                this.cart = await this.request('DELETE', '/api/cart/' + id, null, {
+                    'Content-type': 'application/x-www-form-urlencoded'
+                });
+            } catch (error) {
+                this.$refs.notification.notify(new Error(error));
+                console.error(error);
+            }
+        },
+        async addToCart(good) {
+            try {
+                this.cart = await this.request('POST', '/api/cart', JSON.stringify(good), {
+                    'Content-type': 'application/json; charset=utf-8'
+                });
+            } catch (error) {
+                this.$refs.notification.notify(new Error(error));
+                console.error(error);
+            }
+        },
+        async fetchCart() {
+            try {
+                this.cart = await this.request('GET', '/api/cart');
+            } catch (error) {
+                this.$refs.notification.notify(new Error(error));
+                console.error(error);
+            }
+        },
         async fetchGoods() {
             try {
-                this.goods = await request('GET', '/api/goods');
+                this.goods = await this.request ('GET', '/api/goods');
                 this.filteredGoods = [...this.goods];
             } catch (e) {
                 this.$refs.notification.notify(new Error(e));
@@ -222,7 +223,9 @@ const app = new Vue({
     },
     mounted() {
         this.$nextTick(() => {
-            this.fetchGoods();
+            const goodsPromise = this.fetchGoods();
+            const cartPromise = this.fetchCart();
+            Promise.all([goodsPromise, cartPromise]);
         });
     }
 });

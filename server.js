@@ -7,6 +7,23 @@ const app = express();
 app.use(express.static('.'));
 app.use(bodyParser.json());
 
+const ACTION_TYPES = {
+    add: 'add',
+    remove: 'remove'
+};
+
+const log = (type, goodName) => {
+    fs.readFile('./data/stats.json', 'utf-8', (err, data) => {
+        const stats = !!data ? JSON.parse(data) : [];
+        stats.push({
+            type,
+            name: goodName,
+            createAt: +new Date()
+        });
+        fs.writeFile('./data/stats.json', JSON.stringify(stats), () => {});
+    });
+};
+
 app.get('/api/goods', (req, res) => {
     fs.readFile('./data/catalog.json', 'utf-8', (err, data) => {
         if (err) {
@@ -27,28 +44,30 @@ app.get('/api/cart', (req, res) => {
     });
 });
 
-app.post('/api/cart/:id', (req, res) => {
+app.delete('/api/cart/:id', (req, res) => {
     const id = req.params.id;
     if (id.length !== 0 && !isNaN(+id)) {
         fs.readFile('./data/cart.json', 'utf-8', (err, data) => {
             if (err) {
-                res.send({ result: 0 });
+                res.status(500).send();
                 return;
             }
             const cart = !!data ? JSON.parse(data) : [];
-            const goods = cart.filter((item) => item.id !== Number(req.params.id));
-
-            fs.writeFile('./data/cart.json', JSON.stringify(goods), (err, data) => {
+            const goodIndex = cart.findIndex((item) => item.id === Number(req.params.id));
+            const good = cart[goodIndex];
+            cart.splice(goodIndex, 1);
+            fs.writeFile('./data/cart.json', JSON.stringify(cart), (err, data) => {
                 if (err) {
-                    res.send({ result: 0 });
+                    res.status(500).send();
                     return;
                 }
-                res.send({ result: 1 });
+                log(ACTION_TYPES.remove, good.name);
+                res.send(cart);
             });
 
         });
     } else {
-        res.send({ result: 0 });
+        res.status(500).send();
     }
 });
 
@@ -61,13 +80,14 @@ app.post('/api/cart', (req, res) => {
             }
             const cart = !!data ? JSON.parse(data) : [];
             const goodItem = req.body;
-    
+
             cart.push(goodItem);
             fs.writeFile('./data/cart.json', JSON.stringify(cart), (err) => {
                 if (err) {
                     res.status(520).send();
                     return
                 }
+                log(ACTION_TYPES.add, goodItem.name);
                 res.send(cart);
             })
         });

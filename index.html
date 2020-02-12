@@ -14,7 +14,7 @@
         <header class="header">
             <div class="header-container">
                 <div class="item">
-                    <cart />
+                    <cart :cart="cart" @remove="removeToCart" />
                 </div>
                 <div class="item">
                     <goods-search :goods="goods" :filtered-goods.sync="filteredGoods" />
@@ -23,7 +23,7 @@
         </header>
         <main class="main">
             <div class="main-container">
-                <goods-list :goods="filteredGoods" />
+                <goods-list :goods="filteredGoods" @add="addToCart" />
             </div>
         </main>
         <notification ref="notification" />
