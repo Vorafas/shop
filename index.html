@@ -14,7 +14,7 @@
         <header class="header">
             <div class="header-container">
                 <div class="item">
-                    <cart-button />
+                    <cart :cart="cart" @remove="removeToCart" />
                 </div>
                 <div class="item">
                     <goods-search :goods="goods" :filtered-goods.sync="filteredGoods" />
@@ -23,13 +23,13 @@
         </header>
         <main class="main">
             <div class="main-container">
-                <goods-list :goods="filteredGoods" />
+                <goods-list :goods="filteredGoods" @add="addToCart" />
             </div>
         </main>
         <notification ref="notification" />
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-    <script src="js/index.js"></script>
+    <script src="dist/build.js"></script>
 </body>
 </html>
